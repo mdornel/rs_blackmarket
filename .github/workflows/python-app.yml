@@ -1,0 +1,75 @@
+#  .github/workflows/python-app.yml
+
+name: Python application
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        ports:
+          - "5432:5432"
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+      # CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.10
+
+    - name: Installing resoruces
+      run: |
+        pip install --upgrade pip==22.2.2
+        pip install pipenv
+
+    - name: Cache pipenv
+      uses: actions/cache@v3
+      id: pipenv-cache
+      with:
+        path: ~/.local/share/virtualenvs
+        key: ${{ runner.os }}-pipenv-cache-${{ hashFiles('Pipfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-pipenv-cache
+
+    - name: Installing requirements
+      if: steps.pipenv-cache.outputs.cache-hit != 'true'
+      run: |
+        pipenv install --dev
+
+    - name: Checking PEP8 code style
+      run: |
+        pipenv run flake8 --count
+
+    - name: Checking Black code formatter
+      run: |
+        pipenv run black . --check
+
+    - name: Check typing
+      run: |
+        pipenv run mypy .
+
+    - name: Running tests
+      run: |
+        pipenv run coverage run -m pytest --ds=config.settings.test
+
+    - name: Checking coverage
+      run: |
+        pipenv run coverage report --fail-under=90 -m
+        pipenv run coverage xml
+
+    # - name: Setup Code Climate test-reporter
+    #   run: |
+    #       curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+    #       chmod +x ./cc-test-reporter
+    #       ./cc-test-reporter before-build
+    #       ./cc-test-reporter after-build --coverage-input-type coverage.py --exit-code $?
