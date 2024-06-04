@@ -14,8 +14,7 @@ from django.utils.translation import gettext_lazy as _
 from rs_blackmarket.users.forms import UserAdminChangeForm
 from rs_blackmarket.users.models import User
 from rs_blackmarket.users.tests.factories import UserFactory
-from rs_blackmarket.users.views import (UserRedirectView, UserUpdateView,
-                                        user_detail_view)
+from rs_blackmarket.users.views import UserRedirectView, UserUpdateView, user_detail_view
 
 pytestmark = pytest.mark.django_db
 
