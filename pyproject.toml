@@ -173,6 +173,9 @@ line-ending = "auto"
 [tool.ruff.lint.isort]
 force-single-line = true
 
+[tool.isort]
+profile = "black"
+
 [tool.black]
 skip_string_normalization = false
 line-length = 120
